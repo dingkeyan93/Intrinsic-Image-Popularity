@@ -1,3 +1,3 @@
 # Instagram popularity
-Intrinsic image popularity on Instagram
+Intrinsic image popularity on Instagram.
 Wait to add ...
