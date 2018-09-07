@@ -9,7 +9,7 @@ def prepare_image(image):
     if image.mode != 'RGB':
         image = image.convert("RGB")
     Transform = transforms.Compose([
-            transforms.Resize([224,224]),        
+            transforms.Resize([224,224]),      
             transforms.ToTensor(),
             ])
     image = Transform(image)   
