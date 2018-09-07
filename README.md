@@ -1,4 +1,4 @@
-# Intrinsic image popularity on Instagram
+# Intrinsic image popularity Predictor
 
 This is a PyTorch implementation of *Intrinsic Image Popularity Prediction: Focusing on the Visual Content*.
 
