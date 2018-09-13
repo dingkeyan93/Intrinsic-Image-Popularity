@@ -4,11 +4,11 @@ This is a PyTorch implementation of *Intrinsic Image Popularity Prediction: Focu
 
 This work can objectively and quantitatively predict how much traction an image will get on Instagram by computing the image popularity score. It can help users to choose the image that would be the most popular to the public.
 
-run ```python test.py [image_path]``` to evaluate your intrinsic image popularity on Instagram. 
+run ```python test.py <image_path>``` to evaluate your intrinsic image popularity on Instagram. 
 
 <!-- You can [click here](https://portland-my.sharepoint.com/:u:/g/personal/keyanding2-c_ad_cityu_edu_hk/EeQcNCrMrvRIor44lbj9hOsBN6qZ2SafvdB0auO7TAGchg?e=BxkeuN) to download the released pretrained model.  -->
 
-~~Here is a [Web-based Demo](http://keyan.ink/).~~
+Here is a [Web-based Demo](http://keyan.ink/). (Closed now)
 
 Here is a subjective test: [part_1](https://wj.qq.com/s/2286258/eb6f), [part_2](https://wj.qq.com/s/2288733/8193), [part_3](https://wj.qq.com/s/2288740/5db0) and [part_4](https://wj.qq.com/s/2288743/c421). Welcome to join the test!
 
