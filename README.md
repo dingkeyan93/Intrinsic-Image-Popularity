@@ -10,6 +10,8 @@ run ```python test.py [image_path]``` to evaluate your intrinsic image popularit
 
 ~~Here is a [Web-based Demo](http://keyan.ink/).~~
 
+Here is a subjective test: [part_1](https://wj.qq.com/s/2286258/eb6f), [part_2](https://wj.qq.com/s/2288733/8193), [part_3](https://wj.qq.com/s/2288740/5db0) and [part_4](https://wj.qq.com/s/2288743/c421). Welcome to join the test!
+
 **Wait to add**:
 1. The raw data of Instagram post information. (The first publicly available large-scale dataset on Instagram. It opens the doors for several interesting directions on Instagram, not only for image popularity prediction, but image captioning, image tagging, emoji prediction and so on.)
 2. The generated DPIP dataset.
