@@ -1,6 +1,6 @@
 # Intrinsic image popularity Predictor
 
-This is a PyTorch implementation of *Intrinsic Image Popularity Prediction: Focusing on the Visual Content*.
+This is a PyTorch implementation of *Intrinsic Image Popularity Prediction*.
 
 This work can objectively and quantitatively predict how much traction an image will get on Instagram by computing the image popularity score. It can help users to choose the image that would be the most popular to the public.
 
