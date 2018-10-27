@@ -8,7 +8,7 @@ run ```python test.py <image_path>``` to evaluate thr intrinsic image popularity
 
 Here is our [Web Demo](http://popularity.keyan.work/).
 
-Here is a Subjective Test: [part_1](https://wj.qq.com/s/2286258/eb6f), [part_2](https://wj.qq.com/s/2288733/8193), [part_3](https://wj.qq.com/s/2288740/5db0) and [part_4](https://wj.qq.com/s/2288743/c421). Welcome to join the test!
+<!-- Here is a Subjective Test: [part_1](https://wj.qq.com/s/2286258/eb6f), [part_2](https://wj.qq.com/s/2288733/8193), [part_3](https://wj.qq.com/s/2288740/5db0) and [part_4](https://wj.qq.com/s/2288743/c421). Welcome to join the test! -->
 
 **Wait to add**:
 1. The raw data of Instagram post information, contains the collection time, post url, id, content type, upload time, caption (including emojis, hashtags and @ people), the number of likes and comments.
