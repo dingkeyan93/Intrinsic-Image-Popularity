@@ -13,3 +13,13 @@ Here is the [Online Demo](http://popularity.keyan.work/).
 We provide the dataset of popularity-discriminable image pairs by the form of "shortcode". You can download the images with the URL ```"https://www.instagram.com/p/<shortcode>/media/?size=l".``` 
 
 *Note, some URLs may be invalid now.*
+
+### Citation
+```
+@article{ding2019intrinsic,
+  title={Intrinsic Image Popularity Assessment},
+  author={Ding, Keyan and Ma, Kede and Wang, Shiqi},
+  journal={arXiv:1907.01985}, 
+  year={2019}
+}
+```
