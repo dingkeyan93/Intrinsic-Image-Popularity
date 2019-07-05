@@ -10,4 +10,6 @@ run ```python test.py <image_path>``` to evaluate thr intrinsic image popularity
 Here is the [Online Demo](http://popularity.keyan.work/).
 
 ## Dataset
-Coming soon...
+We provide the dataset of popularity-discriminable image pairs by the form of "shortcode". You can download the images with the URL "https://www.instagram.com/p/\<shortcode\>/media/?size=l". 
+
+*Note, some URLs may be invalid now.*
