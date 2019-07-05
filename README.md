@@ -16,10 +16,10 @@ We provide the dataset of popularity-discriminable image pairs by the form of "s
 
 ### Citation
 ```
-@article{ding2019intrinsic,
+@inproceedings{ding2019intrinsic,
   title={Intrinsic Image Popularity Assessment},
   author={Ding, Keyan and Ma, Kede and Wang, Shiqi},
-  journal={arXiv:1907.01985}, 
+  booktitle={ACM Multimedia}, 
   year={2019}
 }
 ```
