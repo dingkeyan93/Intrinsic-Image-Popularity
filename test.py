@@ -16,14 +16,8 @@ def prepare_image(image):
     image = image.unsqueeze(0)
     return image
 
-def main():
-    image = Image.open(config.image_path)
+def predict(image, model):
     image = prepare_image(image)
-    model = torchvision.models.resnet50()
-    # model.avgpool = nn.AdaptiveAvgPool2d(1) # for any size of the input
-    model.fc = torch.nn.Linear(in_features=2048, out_features=1)
-    model.load_state_dict(torch.load('model/model-resnet50.pth')) 
-    model.eval()
     with torch.no_grad():
         preds = model(image)
     score = preds.detach().numpy().item()
@@ -33,4 +27,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--image_path', type=str, default='images/0.jpg')
     config = parser.parse_args()
-    main()
+    image = Image.open(config.image_path)
+    model = torchvision.models.resnet50()
+    # model.avgpool = nn.AdaptiveAvgPool2d(1) # for any size of the input
+    model.fc = torch.nn.Linear(in_features=2048, out_features=1)
+    model.load_state_dict(torch.load('model/model-resnet50.pth')) 
+    model.eval()
+    predict(image, model)
