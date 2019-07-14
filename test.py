@@ -20,6 +20,7 @@ def main():
     image = Image.open(config.image_path)
     image = prepare_image(image)
     model = torchvision.models.resnet50()
+    # model.avgpool = nn.AdaptiveAvgPool2d(1) # for any size of the input
     model.fc = torch.nn.Linear(in_features=2048, out_features=1)
     model.load_state_dict(torch.load('model/model-resnet50.pth')) 
     model.eval()
