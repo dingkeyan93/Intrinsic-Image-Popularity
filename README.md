@@ -19,7 +19,9 @@ We provide the dataset of popularity-discriminable image pairs by the form of "s
 @inproceedings{ding2019intrinsic,
   title={Intrinsic Image Popularity Assessment},
   author={Ding, Keyan and Ma, Kede and Wang, Shiqi},
-  booktitle={ACM Multimedia}, 
-  year={2019}
+  booktitle={ACM International Conference on Multimedia},
+  pages={1979--1987},
+  year={2019},
+  organization={ACM}
 }
 ```
