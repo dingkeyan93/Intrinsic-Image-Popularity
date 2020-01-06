@@ -20,8 +20,7 @@ def predict(image, model):
     image = prepare_image(image)
     with torch.no_grad():
         preds = model(image)
-    score = preds.detach().numpy().item()
-    print('Popularity score: '+str(round(score,2)))
+    print(r'Popularity score: %.2f' % preds.item())
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
