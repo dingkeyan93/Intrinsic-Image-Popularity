@@ -4,6 +4,7 @@ import torch
 import torchvision.models
 import torchvision.transforms as transforms
 from PIL import Image
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def prepare_image(image):
     if image.mode != 'RGB':
@@ -14,7 +15,7 @@ def prepare_image(image):
             ])
     image = Transform(image)   
     image = image.unsqueeze(0)
-    return image
+    return image.to(device)
 
 def predict(image, model):
     image = prepare_image(image)
@@ -30,6 +31,6 @@ if __name__ == '__main__':
     model = torchvision.models.resnet50()
     # model.avgpool = nn.AdaptiveAvgPool2d(1) # for any size of the input
     model.fc = torch.nn.Linear(in_features=2048, out_features=1)
-    model.load_state_dict(torch.load('model/model-resnet50.pth')) 
-    model.eval()
+    model.load_state_dict(torch.load('model/model-resnet50.pth', map_location=device)) 
+    model.eval().to(device)
     predict(image, model)
