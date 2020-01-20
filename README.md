@@ -2,10 +2,11 @@
 
 This is a PyTorch implementation of the paper [Intrinsic Image Popularity Assessment](https://arxiv.org/abs/1907.01985).
 
-This work can objectively and quantitatively predict how much traction an image will get on Instagram. 
+This work can quantitatively predict how much traction an image will get on Instagram. 
+
 It can help users to find the image that would be the most popular to the public.
 
-run ```python test.py --image_path <image_path>``` to evaluate the intrinsic image popularity of your photos on Instagram. 
+Run ```python test.py --image_path <image_path>``` to evaluate the intrinsic image popularity of your photos on Instagram. 
 
 This is the [Online Demo](iipa.free-http.svipss.top).
 
