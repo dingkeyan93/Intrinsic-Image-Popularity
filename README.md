@@ -8,7 +8,9 @@ It can help users to find the image that would be the most popular to the public
 
 Run ```python test.py --image_path <image_path>``` to evaluate the intrinsic image popularity of your photos on Instagram. 
 
-This is the [Online Demo](https://iipa.ngrok2.xiaomiqiu.cn) (unstable).
+<!-- This is the [Online Demo](https://iipa.ngrok2.xiaomiqiu.cn) (unstable). -->
+
+This project use the MIT license.
 
 ### Dataset
 We provide the dataset of popularity-discriminable image pairs by the form of "shortcode". You can download the images with the URL ```"https://www.instagram.com/p/<shortcode>/media/?size=l".``` 
