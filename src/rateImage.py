@@ -7,6 +7,8 @@ import torchvision.transforms as transforms
 from PIL import Image
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+popularityDictionary = {}
+
 
 def prepare_image(image):
     if image.mode != 'RGB':
@@ -24,7 +26,7 @@ def predict(image, model):
     image = prepare_image(image)
     with torch.no_grad():
         preds = model(image)
-    print(r'Popularity score: %.2f' % preds.item())
+    return round(preds.item(), 4)
 
 
 def setUpModel():
@@ -64,11 +66,11 @@ def rateImages(model, paths):
             fileName, fileExtension = os.path.splitext(path)
         if args.ext == fileExtension:
             image = Image.open(path)
-            print(fileName)
-            predict(image, model)
+            popularityDictionary[fileName] = predict(image, model)
 
 
 if __name__ == '__main__':
     model = setUpModel()
     args = setArgParser()
     rateImages(model, args.path)
+    print(dict(sorted(popularityDictionary.items(), key=lambda item: item[1])))
