@@ -1,5 +1,6 @@
 IIPA_Result.txt
 results.json
 .vscode
-IIPA/**/*
 Intrinsic-Image-Popularity.code-workspace
+**/dist/**
+IIPA/**/static/**

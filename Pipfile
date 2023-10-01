@@ -8,11 +8,15 @@ torch = "*"
 torchvision = "*"
 argparse = "*"
 pillow = "*"
-requests = "2.28.1"
+requests = "2.31"
 wheel = "*"
 setuptools = "*"
 pip = "*"
 django = "*"
+uvicorn = "*"
+gunicorn = "*"
+django-polls = {file = "django-polls/dist/django-polls-0.3.tar.gz"}
+numpy = "*"
 
 [dev-packages]
 autopep8 = "*"
