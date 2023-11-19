@@ -3,23 +3,39 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "https://download.pytorch.org/whl/cpu"
+verify_ssl = true
+name = "downloadpytorch"
+
 [packages]
-torch = "*"
-torchvision = "*"
 argparse = "*"
 pillow = "*"
-requests = "2.31"
+requests = "*"
 wheel = "*"
 setuptools = "*"
 pip = "*"
 django = "*"
-uvicorn = "*"
 gunicorn = "*"
-django-polls = {file = "django-polls/dist/django-polls-0.3.tar.gz"}
 numpy = "*"
+sympy = "*"
+django-environ = "*"
+google-auth = "*"
+google-cloud-secret-manager = "*"
+django-storages = {extras = ["google"], version = "*"}
+django-debug-toolbar = "*"
+uvicorn = "*"
+google-cloud-logging = "*"
+torch = {version = "!=2.0.1,!=2.1.0,>=2.0.0", index = "downloadpytorch"}
+torchvision = {version = "==0.15.1", index = "downloadpytorch"}
+aws-secretsmanager-caching = "*"
+botocore = "*"
+psycopg2 = "*"
+django-bootstrap5 = "*"
+python-dotenv = "*"
 
 [dev-packages]
 autopep8 = "*"
 
 [requires]
-python_version = "3.11"
+python_version = "3.10"

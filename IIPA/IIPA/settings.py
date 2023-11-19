@@ -11,91 +11,281 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import io
+import os
+import sys
+from urllib.parse import urlparse
+import json
+
+import environ
+import google.auth
+from google.cloud import secretmanager
+from google.oauth2 import service_account
+import logging
+import google.cloud.logging
+
+from django.utils.log import DEFAULT_LOGGING
+
+import botocore
+import botocore.session
+from botocore.config import Config
+from aws_secretsmanager_caching import SecretCache, SecretCacheConfig
+
+
+logger = logging.getLogger(__file__)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = (
-    "L@HXnu.Fw_aUGFhD!q4*ErwLq@jUXWhm4HR*WWYcY__c2.PMptg-VtDxYmXuvhBCKGoQHYVzgr6L."
+config = Config(
+    region_name="us-east-2",
 )
 
+
+logger.debug(f"\n\n\n\n config \n\n\n\n{config}\n\n\n\n\n\n\n")
+print(f"\n\n\n\n config \n\n\n\n{config}\n\n\n\n\n\n\n")
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# Change this to "False" when you are ready for production
+ENV = environ.Env(
+    CLOUDRUN_SERVICE_URL=(str, None),
+    DEBUG=(bool, True),
+    GCP_DEV=(bool, os.environ.get("GCP_DEV")),
+    GS_BUCKET_NAME=(str, "local"),
+    LOCAL_DEV=(bool, False),
+    SECRET_KEY=(str, ""),
+    SERVICE_ACCOUNT_KEY=(str, " "),
+    GS_CREDENTIALS=(service_account.Credentials, None),
+    GOOGLE_CLOUD_PROJECT=(str, " "),
+    SERVICE_URL_TAGS=(str, os.environ.get("SERVICE_URL_TAGS")),
+)
+
+env_file = os.path.join(BASE_DIR, ".env")
+logger.debug("ENV:", env_file)
+
+
+DEBUG = ENV("DEBUG")
+LOCAL_DEV = ENV("LOCAL_DEV")
+SERVICE_ACCOUNT_KEY = ENV("SERVICE_ACCOUNT_KEY")
+SECRET_KEY = ENV("SECRET_KEY")
+GCP_DEV = os.environ.get("GCP_DEV")
+GS_CREDENTIALS = ENV("GS_CREDENTIALS")
+GOOGLE_CLOUD_PROJECT = ENV("GOOGLE_CLOUD_PROJECT")
+SERVICE_URL_TAGS = (
+    os.environ.get("SERVICE_URL_TAGS").split(";")
+    if os.environ.get("SERVICE_URL_TAGS") != None
+    else None
+)
+
+
+logger.debug(f"GCP MODE: {GCP_DEV}")
+print(f"GCP MODE: {GCP_DEV}")
+
+print(os.environ.keys())
+logger.debug(os.environ.keys())
+
+logger.debug(f"SERVICE_URL_TAGS: {SERVICE_URL_TAGS}")
+print(f"SERVICE_URL_TAGS: {SERVICE_URL_TAGS}")
+
+with open("../unformatted_cred.json", "r") as fileObj:
+    keyHeader = "-----BEGIN PRIVATE KEY-----"
+    keyFooter = "-----END PRIVATE KEY-----"
+    fileData = fileObj.read()
+
+    keyHeaderIndex = fileData.index("-----BEGIN PRIVATE KEY-----")
+    keyFooterIndex = fileData.index("-----END PRIVATE KEY-----")
+
+    logger.debug(
+        fileData[keyHeaderIndex : keyHeaderIndex + len(keyHeader)],
+        fileData[keyFooterIndex : keyFooterIndex + len(keyFooter)],
+        keyHeaderIndex,
+        keyFooterIndex,
+    )
+
+    a1 = fileData[:keyHeaderIndex]
+    a2 = fileData[keyFooterIndex + len(keyFooter) + 1 :]
+
+    key = fileData[keyHeaderIndex + len(keyHeader) + 1 : keyFooterIndex]
+
+    key = key.replace("\n", " ").replace(" ", "\\n")
+
+    fileData = a1 + keyHeader + "\\n" + key + keyFooter + "\\n" + a2
+
+    logger.debug(fileData)
+
+    data = json.loads(fileData)
+    fileObj.close()
+
+logger.debug(SERVICE_ACCOUNT_KEY)
+keyHeaderIndex = data  # json.loads(SERVICE_ACCOUNT_KEY.replace("\n", ""))
+logger.debug("Write", keyHeaderIndex)
+with open(os.path.join(os.getcwd(), "credential.json"), "w") as neep:
+    json.dump(keyHeaderIndex, neep)
+    neep.close()
+
+print(f'path: {os.path.join(os.getcwd(), "credential.json")}')
+
+with open(os.path.join(os.getcwd(), "credential.json"), "r") as neep:
+    data = json.load(neep)
+    neep.close()
+
+logger.debug(data)
+print(f"crede: {data}")
+
+GS_CREDENTIALS = service_account.Credentials.from_service_account_info(
+    data,
+    scopes=[
+        "https://www.googleapis.com/auth/cloud-platform",
+        "https://www.googleapis.com/auth/devstorage.full_control",
+        "https://www.googleapis.com/auth/devstorage.read_only",
+        "https://www.googleapis.com/auth/devstorage.read_write",
+    ],
+)
+
+logger.debug(f"credsss: {GS_CREDENTIALS}")
+logger.debug(os.environ)
+print(os.environ)
+
+# Attempt to load the Project ID into the environment, safely failing on error.
+try:
+    if GCP_DEV:
+        logger.debug("start in GCP ENV MODE")
+        print("start in GCP ENV MODE")
+        _, os.environ["GOOGLE_CLOUD_PROJECT"] = google.auth.default(  # type: ignore
+            scopes=[
+                "https://www.googleapis.com/auth/cloud-platform",
+                "https://www.googleapis.com/auth/devstorage.full_control",
+                "https://www.googleapis.com/auth/devstorage.read_only",
+                "https://www.googleapis.com/auth/devstorage.read_write",
+            ]
+        )  # type: ignore
+        # Pull secrets from Secret Manager
+        project_id = ENV("GOOGLE_CLOUD_PROJECT")
+        client = secretmanager.SecretManagerServiceClient()
+        settings_name = os.environ.get("SETTINGS_NAME", "django_settings")
+        name = f"projects/{project_id}/secrets/{settings_name}/versions/latest"
+        payload = client.access_secret_version(name=name).payload.data.decode("UTF-8")
+        print(settings_name + " " + project_id + " " + payload + " ")
+        ENV.read_env(io.StringIO(payload))
+        ENV.read_env(env_file, overwrite=True) if LOCAL_DEV else None
+    elif os.path.isfile(env_file):
+        logger.debug("start in OTHER ENV MODE")
+        ENV.read_env(env_file, overwrite=True)
+
+        if DEBUG and LOCAL_DEV and not GCP_DEV:
+            logger.debug("In DEBUG and LOCAL MODE")
+        elif DEBUG:
+            logger.debug("In DEBUG MODE")
+
+    else:
+        logger.debug("I AM HERE else")
+        raise Exception(
+            "No local .env or GOOGLE_CLOUD_PROJECT detected. No secrets found."
+        )
+except google.auth.exceptions.DefaultCredentialsError:  # type: ignore
+    logger.debug("I AM HERE except")
+    logger.debug(sys.exc_info())
+    pass
+
+SECRET_KEY = ENV("SECRET_KEY")
+
+client = botocore.session.get_session().create_client(
+    "secretsmanager",
+    config=config,
+    region_name="us-east-2",
+    aws_access_key_id=ENV("AWS_ACCESS_KEY"),
+    aws_secret_access_key=ENV("AWS_SECRET_KEY"),
+)  # type: ignore
+cache_config = SecretCacheConfig()
+cache = SecretCache(config=cache_config, client=client)
+
+DBSECRET = json.loads(
+    cache.get_secret_string("rds!db-5216300f-7c34-431e-ba9d-0319b2e4d113")
+)
+
+
+logger.debug(f"\n\n\n secret \n\n\n\n{DBSECRET}\n\n\n\n\n\n\n")
+print(f"\n\n\n secret \n\n\n\n{DBSECRET.get('password')}\n\n\n\n\n\n\n")
+
+# BOOTSTRAP5_FOLDER = os.path.abspath(os.path.join(BASE_DIR, "..", "django_bootstrap5"))
+# if BOOTSTRAP5_FOLDER not in sys.path:
+#     sys.path.insert(0, BOOTSTRAP5_FOLDER)
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-LOGGING = LOGGING = {
+LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
-            "style": "{",
-        },
         "simple": {
-            "format": "{levelname} {message}",
+            "format": "[{pathname}] [line: {lineno}] [pid: {process}] [thread: {thread}] [{levelname}]: {message}",
             "style": "{",
-        },
-    },
-    "filters": {
-        "require_debug_true": {
-            "()": "django.utils.log.RequireDebugTrue",
         },
     },
     "handlers": {
         "console": {
-            "level": "INFO",
-            "filters": ["require_debug_true"],
+            "level": "DEBUG",
             "class": "logging.StreamHandler",
             "formatter": "simple",
         },
-        "mail_admins": {
-            "level": "INFO",
-            "class": "django.utils.log.AdminEmailHandler",
-        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
     },
     "loggers": {
         "django": {
             "handlers": ["console"],
+            "level": "DEBUG",
             "propagate": True,
-        },
-        "django.request": {
-            "handlers": ["mail_admins"],
-            "level": "ERROR",
-            "propagate": False,
         },
     },
 }
 
-ADMINS = [("jacobzwickler", "jazwickler@gmail.com")]
 
-ALLOWED_HOSTS = ["*"]
-
-SECURE_HSTS_SECONDS = 50
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SESSION_COOKIE_SECURE = True
-SECURE_HSTS_PRELOAD = True
-
-
+ADMINS = [("jaked", "jazwickler@gmail.com")]
 
 # Application definition
 
 INSTALLED_APPS = [
-    "polls",
+    "imageRater.apps.ImageraterConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_bootstrap5",
+    "debug_toolbar",
 ]
 
-CSRF_COOKIE_SECURE = True
+
+# SECURITY WARNING: It's recommended that you use this when
+# running in production. The URL will be known once you first deploy
+# to Cloud Run. This code takes the URL and converts it to both these settings formats.
+
+CLOUDRUN_SERVICE_URL = ENV("CLOUDRUN_SERVICE_URL").split(",") if ENV("CLOUDRUN_SERVICE_URL") != None else None  # type: ignore
+logger.debug(CLOUDRUN_SERVICE_URL)
+if CLOUDRUN_SERVICE_URL != None:
+    CSRF_COOKIE_SECURE = True
+    ALLOWED_HOSTS = []
+    CSRF_TRUSTED_ORIGINS = []
+    if SERVICE_URL_TAGS != None:
+        for tag in SERVICE_URL_TAGS:
+            for url in CLOUDRUN_SERVICE_URL:
+                if len(url) > 0:
+                    url.replace("https://", f"https://{tag}---")
+                    ALLOWED_HOSTS.append(urlparse(url).netloc)
+                    CSRF_TRUSTED_ORIGINS.append(url)
+    else:
+        for url in CLOUDRUN_SERVICE_URL:
+            ALLOWED_HOSTS.append(urlparse(url).netloc)
+            CSRF_TRUSTED_ORIGINS.append(url)
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+else:
+    ALLOWED_HOSTS = ["*"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -105,6 +295,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = "IIPA.urls"
@@ -116,10 +307,13 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                "django.template.context_processors.static",
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.media",
+                "django.template.context_processors.csrf",
             ],
         },
     },
@@ -131,13 +325,21 @@ WSGI_APPLICATION = "IIPA.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+logger.debug(DBSECRET.get("password"))
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": "iipa.cj0jeurehhtj.us-east-2.rds.amazonaws.com",
+        "USER": "postgres",
+        "PASSWORD": DBSECRET.get("password"),
+        "NAME": "iipa",
+        "PORT": "5432",
+        "SSL": {"sslrootcert": "/.aws/us-east-2-bundle.pem", "sslmode": "verify-ca"},
     }
 }
 
+SERVER_EMAIL = "jazwickler@gmail.com"
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -169,14 +371,52 @@ USE_I18N = True
 
 USE_TZ = True
 
+INTERNAL_IPS = ["127.0.0.1"]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
 
-import os
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+# Define static storage via django-storages[google]
+GS_BUCKET_NAME = ENV("GS_BUCKET_NAME")
+print(f"storage: {GS_BUCKET_NAME}, cred: {GS_CREDENTIALS}")
+if GS_BUCKET_NAME == "local":
+    STATIC_URL = "static/"
+    STATIC_ROOT = "static/"
+elif GS_BUCKET_NAME == "iipa-static":
+    STATIC_URL = "static/"
+    project_id = ENV("GOOGLE_CLOUD_PROJECT")
+    STATICFILES_DIRS = ["/iipa-workspace/IIPA/imageRater/static/imageRater"]
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+            "OPTIONS": {
+                "bucket_name": "iipa-uploads",
+                "project_id": project_id,
+                "default_acl": None,
+                "querystring_auth": False,
+                "location": "uploads/",
+                "credentials": GS_CREDENTIALS,
+            },
+        },
+        "staticfiles": {
+            "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+            "OPTIONS": {
+                "bucket_name": GS_BUCKET_NAME,
+                "project_id": project_id,
+                "default_acl": None,
+                "querystring_auth": False,
+                "location": "static/",
+                "credentials": GS_CREDENTIALS,
+            },
+        },
+    }
+else:
+    raise Exception(
+        "No local .env or GS_BUCKET_NAME detected. No storage option found."
+    )
+
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

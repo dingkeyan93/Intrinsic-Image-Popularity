@@ -1,0 +1,143 @@
+steps:
+  - id: Build Image
+    name: "gcr.io/kaniko-project/executor:latest"
+    env: [
+        "SERVICE_URL_TAGS=${_SERVICE_URL_TAGS}",
+        "DEBUG=False",
+        "LOCAL_DEV=False",
+        "GCP_DEV=True",
+        "PYTHONUNBUFFERED=True",
+    ]
+    args:
+      [
+        "--dockerfile=Dockerfile",
+        "--destination=gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest",
+        "--destination=gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$TAG_NAME",
+        "--cache=true",
+        "--cache-ttl=1h",
+        "--snapshot-mode=redo",
+        "--compressed-caching=false",
+        "--cache-copy-layers=true",
+        "--cache-run-layers=true",
+        "--verbosity=debug",
+        "--cleanup",
+      ]
+  # - id: "push image"
+  #   name: "gcr.io/cloud-builders/docker"
+  #   args: ["push", "gcr.io/$PROJECT_ID/${_SERVICE_NAME}"]
+  # - id: "make migrations"
+  #   env:
+  #     [
+  #       "DEBUG=False",
+  #       "LOCAL_DEV=False",
+  #       "GCP_DEV=True",
+  #       "PYTHONUNBUFFERED=True",
+  #     ]
+  #   secretEnv: ["DJANGO_SETTINGS"]
+  #   name: "gcr.io/google-appengine/exec-wrapper"
+  #   args:
+  #     [
+  #       "-i",
+  #       "gcr.io/$PROJECT_ID/${_SERVICE_NAME}",
+  #       "-e",
+  #       "SETTINGS_NAME=${_SECRET_SETTINGS_NAME}",
+  #       "-e",
+  #       "GCP_DEV=True",
+  #       "--",
+  #       "../.venv/bin/python",
+  #       "/iipa-workspace/IIPA/manage.py",
+  #       "makemigrations",
+  #     ]
+  # # - id: "apply migrations"
+  #   env:
+  #     [
+  #       "DEBUG=False",
+  #       "LOCAL_DEV=False",
+  #       "GCP_DEV=True",
+  #       "DEBUG=False",
+  #       "LOCAL_DEV=False",
+  #       "PYTHONUNBUFFERED=True",
+  #     ]
+  #   secretEnv: ["DJANGO_SUPERUSER_PASSWORD", "DJANGO_SETTINGS"]
+  #   name: "gcr.io/google-appengine/exec-wrapper"
+  #   args:
+  #     [
+  #       "-i",
+  #       "gcr.io/$PROJECT_ID/${_SERVICE_NAME}",
+  #       "-e",
+  #       "SETTINGS_NAME=${_SECRET_SETTINGS_NAME}",
+  #       "-e",
+  #       "GCP_DEV=True",
+  #       "--",
+  #       "../.venv/bin/python",
+  #       "/iipa-workspace/IIPA/manage.py",
+  #       "migrate",
+  #     ]
+  # - id: "createsuperuser"
+  #   name: "gcr.io/google-appengine/exec-wrapper"
+  #   env:
+  #     [
+  #       "DEBUG=False",
+  #       "LOCAL_DEV=False",
+  #       "GCP_DEV=True",
+  #       "PYTHONUNBUFFERED=True",
+  #     ]
+  #   secretEnv: ["DJANGO_SUPERUSER_PASSWORD", "DJANGO_SETTINGS"]
+  #   args:
+  #     [
+  #       "-i",
+  #       "gcr.io/$PROJECT_ID/${_SERVICE_NAME}",
+  #       "-e",
+  #       "SETTINGS_NAME=${_SECRET_SETTINGS_NAME}",
+  #       "-e",
+  #       "GCP_DEV=True",
+  #       "--",
+  #       "../.venv/bin/python",
+  #       "/iipa-workspace/IIPA/manage.py",
+  #       "createsuperuser",
+  #       "--noinput",
+  #     ]
+  - id: "collect static"
+    name: "gcr.io/google-appengine/exec-wrapper"
+    env:
+      [
+        "DEBUG=False",
+        "LOCAL_DEV=False",
+        "GCP_DEV=True",
+        "PYTHONUNBUFFERED=True",
+      ]
+    secretEnv: ["DJANGO_SETTINGS"]
+    args:
+      [
+        "-i",
+        "gcr.io/$PROJECT_ID/${_SERVICE_NAME}",
+        "-e",
+        "SETTINGS_NAME=${_SECRET_SETTINGS_NAME}",
+        "-e",
+        "GCP_DEV=True",
+        "--",
+        "pipenv",
+        "run",
+        "../.venv/bin/python",
+        "/iipa-workspace/IIPA/manage.py",
+        "collectstatic",
+        "--verbosity",
+        "2",
+        "--noinput",
+      ]
+availableSecrets:
+  secretManager:
+    # - versionName: projects/107006238575/secrets/superuser_password/versions/latest
+    #   env: "DJANGO_SUPERUSER_PASSWORD"
+    # - versionName: projects/107006238575/secrets/service_account_key/versions/latest
+    #   env: "SERVICE_ACCOUNT_KEY"
+    - versionName: projects/107006238575/secrets/django_settings/versions/latest
+      env: "DJANGO_SETTINGS"
+substitutions:
+  _SERVICE_NAME: iipa
+  _SECRET_SETTINGS_NAME: django_settings
+  _SERVICE_URL_TAGS: fake
+options:
+  dynamicSubstitutions: true
+  automapSubstitutions: true
+images: ["gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest"]

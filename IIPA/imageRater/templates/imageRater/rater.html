@@ -1,0 +1,46 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+{% load django_bootstrap5 %}
+{% load static %} 
+{% bootstrap_css %} 
+{% bootstrap_javascript %}
+
+<link rel="stylesheet" href="{% static 'imageRater/styles.css' %}" />
+
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title></title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="" />
+  </head>
+  <body>
+    <div class="d-flex flex-column justify-items-center p-5" id="rater-form">
+      <h1 class="fs-1 mb-3">Intrinsic Image Popularity Assesment</h1>
+      <h2 class="fs-2 mb-1">
+        Use the form below to upload a photo and find out how popular it'll be
+        on instagram
+      </h2>
+
+      <p class="mb-1">
+        This site was made possible by the model found
+        <a href="https://github.com/dingkeyan93/Intrinsic-Image-Popularity"
+          >here</a
+        >
+      </p>
+
+      <form enctype="multipart/form-data" action="/ratings/" method="POST">
+        {% csrf_token %} 
+        {% bootstrap_form form %}
+        <button type="submit" class="btn btn-primary" value="Submit">
+          Submit
+        </button>
+      </form>
+    </div>
+  </body>
+</html>

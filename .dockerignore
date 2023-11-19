@@ -1,0 +1,16 @@
+images/**/*.jpg
+IIPA_Result.txt
+results.json
+.vscode
+Intrinsic-Image-Popularity.code-workspace
+**/dist/**
+README.md
+**/db.sqlite3
+*.env
+diff.txt
+*.jpg
+*.jpeg
+*.png
+.git/
+neeeeep.py
+django-polls/

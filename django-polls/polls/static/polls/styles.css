@@ -1,3 +1,0 @@
-li a {
-    color: green;
-}

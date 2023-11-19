@@ -1,0 +1,24 @@
+<!doctype html>
+{% load django_bootstrap5 %}
+{% load static %}
+{% bootstrap_css %} 
+{% bootstrap_javascript %}
+
+<link rel="stylesheet" href="{% static 'imageRater/styles.css' %}" />
+
+<html data-bs-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title></title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="" />
+  </head>
+  <body>
+    <div class="d-flex flex-column align-items-center justify-items-center p-5 card rater-form">
+       <img src={{url}} style="max-width: 31.25rem" >
+       <p class="fs-4"> Thanks here's your rating: {{ rating }} </p>
+    </div>
+  </body>
+</html>

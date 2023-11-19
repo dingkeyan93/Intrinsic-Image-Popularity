@@ -1,10 +1,16 @@
 {
   "hosting": {
     "public": "public",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "/iipa/**",
+        "run": {
+          "serviceId": "iipa",
+          "region": "us-central1",
+          "pinTag": true
+        }
+      }
     ]
   }
 }

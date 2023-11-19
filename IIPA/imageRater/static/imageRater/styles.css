@@ -1,0 +1,15 @@
+.rater-form {
+    margin: 10rem;
+}
+
+[data-bs-theme=dark] {
+  color: var(--bs-primary-text-emphasis);
+  background-color: var(--bs-primary-bg-subtle);
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    color: var(--bs-primary-text-emphasis);
+    background-color: var(--bs-primary-bg-subtle);
+  }
+}
