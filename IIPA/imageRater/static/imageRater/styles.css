@@ -1,5 +1,7 @@
 .rater-form {
-    margin: 10rem;
+    margin: 3rem;
+    min-width: 20rem;
+    max-width: 80vw;
 }
 
 [data-bs-theme=dark] {
