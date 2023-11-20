@@ -52,8 +52,8 @@ print(
 # Change this to "False" when you are ready for production
 ENV = environ.Env(
     CLOUDRUN_SERVICE_URL=(str, None),
-    DEBUG=(bool, True),
-    GCP_DEV=(bool, os.environ.get("GCP_DEV")),
+    DEBUG=(bool, bool(os.environ.get("DEBUG"))),
+    GCP_DEV=(bool, bool(os.environ.get("GCP_DEV"))),
     GS_BUCKET_NAME=(str, "local"),
     LOCAL_DEV=(bool, False),
     SECRET_KEY=(str, ""),
