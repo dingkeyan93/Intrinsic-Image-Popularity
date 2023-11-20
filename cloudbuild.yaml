@@ -1,15 +1,21 @@
 steps:
   - id: Build Image
     name: "gcr.io/kaniko-project/executor:latest"
-    env: [
+    # entrypoint: 'bash'
+    env:
+      [
         "SERVICE_URL_TAGS=${_SERVICE_URL_TAGS}",
         "DEBUG=False",
         "LOCAL_DEV=False",
         "GCP_DEV=True",
         "PYTHONUNBUFFERED=True",
-    ]
-    args:
-      [
+        # "AAKEY=$AWS_ACCESS_KEY",
+        # "ASKEY=$AWS_SECRET_KEY",
+      ]
+    secretEnv: ["AWS_ACCESS_KEY", "AWS_SECRET_KEY"]
+    args: [
+        "--build-arg=AWS_ACCESS_KEY",
+        "--build-arg=AWS_SECRET_KEY",
         "--dockerfile=Dockerfile",
         "--destination=gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest",
         "--destination=gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$TAG_NAME",
@@ -19,7 +25,7 @@ steps:
         "--compressed-caching=false",
         "--cache-copy-layers=true",
         "--cache-run-layers=true",
-        "--verbosity=debug",
+        "--verbosity=trace",
         "--cleanup",
       ]
   # - id: "push image"
@@ -106,15 +112,19 @@ steps:
         "GCP_DEV=True",
         "PYTHONUNBUFFERED=True",
       ]
-    secretEnv: ["DJANGO_SETTINGS"]
+    secretEnv: ["DJANGO_SETTINGS", "AWS_ACCESS_KEY", "AWS_SECRET_KEY"]
     args:
       [
         "-i",
-        "gcr.io/$PROJECT_ID/${_SERVICE_NAME}",
+        "gcr.io/$PROJECT_ID/${_SERVICE_NAME}:latest",
         "-e",
         "SETTINGS_NAME=${_SECRET_SETTINGS_NAME}",
         "-e",
         "GCP_DEV=True",
+        "-e",
+        "AWS_ACCESS_KEY",
+        "-e",
+        "AWS_SECRET_KEY",
         "--",
         "pipenv",
         "run",
@@ -127,10 +137,10 @@ steps:
       ]
 availableSecrets:
   secretManager:
-    # - versionName: projects/107006238575/secrets/superuser_password/versions/latest
-    #   env: "DJANGO_SUPERUSER_PASSWORD"
-    # - versionName: projects/107006238575/secrets/service_account_key/versions/latest
-    #   env: "SERVICE_ACCOUNT_KEY"
+    - versionName: projects/107006238575/secrets/AWS_ACCESS_KEY/versions/latest
+      env: "AWS_ACCESS_KEY"
+    - versionName: projects/107006238575/secrets/AWS_SECRET_KEY/versions/latest
+      env: "AWS_SECRET_KEY"
     - versionName: projects/107006238575/secrets/django_settings/versions/latest
       env: "DJANGO_SETTINGS"
 substitutions:

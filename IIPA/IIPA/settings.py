@@ -42,8 +42,10 @@ config = Config(
 )
 
 
-logger.debug(f"\n\n\n\n config \n\n\n\n{config}\n\n\n\n\n\n\n")
-print(f"\n\n\n\n config \n\n\n\n{config}\n\n\n\n\n\n\n")
+# logger.debug(f"\n\n\n\n config \n\n\n\n{config}\n\n\n\n\n\n\n")
+print(
+    f"\n\n\n\n config \n\n\n\n{os.environ.get('AWS_SECRET_KEY','Not Found')}\n\n\n\n\n\n\n"
+)
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -59,6 +61,8 @@ ENV = environ.Env(
     GS_CREDENTIALS=(service_account.Credentials, None),
     GOOGLE_CLOUD_PROJECT=(str, " "),
     SERVICE_URL_TAGS=(str, os.environ.get("SERVICE_URL_TAGS")),
+    AWS_ACCESS_KEY=(str, os.environ.get("AWS_ACCESS_KEY")),
+    AWS_SECRET_KEY=(str, os.environ.get("AWS_SECRET_KEY")),
 )
 
 env_file = os.path.join(BASE_DIR, ".env")
@@ -72,12 +76,15 @@ SECRET_KEY = ENV("SECRET_KEY")
 GCP_DEV = os.environ.get("GCP_DEV")
 GS_CREDENTIALS = ENV("GS_CREDENTIALS")
 GOOGLE_CLOUD_PROJECT = ENV("GOOGLE_CLOUD_PROJECT")
+AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY")
+
+AWS_SECRET_KEY = os.environ.get("AWS_SECRET_KEY")
+
 SERVICE_URL_TAGS = (
     os.environ.get("SERVICE_URL_TAGS").split(";")
     if os.environ.get("SERVICE_URL_TAGS") != None
     else None
 )
-
 
 logger.debug(f"GCP MODE: {GCP_DEV}")
 print(f"GCP MODE: {GCP_DEV}")
@@ -190,6 +197,8 @@ except google.auth.exceptions.DefaultCredentialsError:  # type: ignore
 
 SECRET_KEY = ENV("SECRET_KEY")
 
+print(ENV("AWS_ACCESS_KEY"))
+
 client = botocore.session.get_session().create_client(
     "secretsmanager",
     config=config,
@@ -286,6 +295,8 @@ if CLOUDRUN_SERVICE_URL != None:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 else:
     ALLOWED_HOSTS = ["*"]
+
+CSRF_COOKIE_SAMESITE = "None"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

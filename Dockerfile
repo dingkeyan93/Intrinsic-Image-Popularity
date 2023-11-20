@@ -5,8 +5,8 @@ FROM python:3.10.13 as builder
 
 # Allow statements and log messages to immediately appear in the Knative logs
 # ENV PYTHONUNBUFFERED True
-# RUN echo $GOOGLE_APPLICATION_CREDENTIALS
-# RUN echo $SERVICE_ACCOUNT_KEY
+ARG AWS_ACCESS_KEY
+ARG AWS_SECRET_KEY
 ENV PIPENV_VENV_IN_PROJECT=1
 ENV AWS_CONFIG_FILE /.aws/config
 
@@ -47,7 +47,7 @@ COPY ./ $APP_HOME/
 WORKDIR $APP_HOME/IIPA
 # # RUN python manage.py flush --noinput
 # # RUN python manage.py migrate
-ENV USE_GCP_STORAGE True
+ENV GCP_DEV True
  
 # RUN pip install --upgrade pip
 # RUN pipenv requirements > reqsA.txt
