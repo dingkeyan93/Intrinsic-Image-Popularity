@@ -52,8 +52,8 @@ print(
 # Change this to "False" when you are ready for production
 ENV = environ.Env(
     CLOUDRUN_SERVICE_URL=(str, None),
-    DEBUG=(bool, bool(os.environ.get("DEBUG"))),
-    GCP_DEV=(bool, bool(os.environ.get("GCP_DEV"))),
+    DEBUG=(bool, True if os.environ.get("DEBUG") == "True" else False),
+    GCP_DEV=(bool, True if os.environ.get("GCP_DEV") == "True" else False),
     GS_BUCKET_NAME=(str, "local"),
     LOCAL_DEV=(bool, False),
     SECRET_KEY=(str, ""),
@@ -73,7 +73,7 @@ DEBUG = ENV("DEBUG")
 LOCAL_DEV = ENV("LOCAL_DEV")
 SERVICE_ACCOUNT_KEY = ENV("SERVICE_ACCOUNT_KEY")
 SECRET_KEY = ENV("SECRET_KEY")
-GCP_DEV = os.environ.get("GCP_DEV")
+GCP_DEV = ENV("GCP_DEV")
 GS_CREDENTIALS = ENV("GS_CREDENTIALS")
 GOOGLE_CLOUD_PROJECT = ENV("GOOGLE_CLOUD_PROJECT")
 AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY")
@@ -397,7 +397,7 @@ if GS_BUCKET_NAME == "local":
 elif GS_BUCKET_NAME == "iipa-static":
     STATIC_URL = "static/"
     project_id = ENV("GOOGLE_CLOUD_PROJECT")
-    STATICFILES_DIRS = ["/iipa-workspace/IIPA/imageRater/static/imageRater"]
+    STATICFILES_DIRS = [BASE_DIR / "imageRater/static/imageRater"]
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",

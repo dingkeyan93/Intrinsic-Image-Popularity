@@ -27,12 +27,14 @@ def rate_image(request):
             i = form.save()
             a = ImageRating.objects.get(uuid=i.uuid)
             logger.debug("A URL: " + i.image.url)
-            a.rating = rateImagesApp(
+            a.rating_obj = rateImagesApp(
                 [i.image.url], os.path.abspath("./model/model-resnet50.pth")
             )
-            logger.debug("rating: " + str(a.rating.get(i.image.url)))
+            a.url = i.image.url
+            a.rated_img_name = i.image.name
+            a.rated_value = float(a.rating_obj.get(i.image.url))
+            logger.debug("rating: " + str(a.rated_value))
             a.save()
-            logging.debug("rating: " + str(a.rating.get(i.image.url)))
             return HttpResponseRedirect(f"/ratings/{i.uuid}")  # type: ignore
         else:
             return HttpResponseBadRequest(request)
@@ -46,7 +48,7 @@ def post_rate(request, ratingId):
     # resp = HttpResponse(f"thanks, here's your rating: {round(float(rating), 2)} ")
     # resp.status_code = 200
     imageRating = ImageRating.objects.get(uuid=ratingId)
-    rating = imageRating.rating.get(imageRating.image.url)
+    rating = imageRating.rating_obj.get(imageRating.image.url)
     url = imageRating.image.url
     return render(
         request, "imageRater/post-rate.html", {"rating": round(rating, 2), "url": url}

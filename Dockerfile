@@ -48,6 +48,7 @@ WORKDIR $APP_HOME/IIPA
 # # RUN python manage.py flush --noinput
 # # RUN python manage.py migrate
 ENV GCP_DEV True
+
  
 # RUN pip install --upgrade pip
 # RUN pipenv requirements > reqsA.txt
